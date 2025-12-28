@@ -1,0 +1,48 @@
+name: homelab-ops
+
+deployments:
+  - name: nightly-permissions-fix
+    entrypoint: jobs/prefect/flows/permission_fixup.py:permission_fixup
+    work_pool:
+      name: homelab
+      work_queue_name: default
+    schedules:
+      - cron: "0 6 * * *"
+        timezone: "Etc/UTC"
+    parameters:
+      root: "/srv/homelab/state"
+      uid: 1000
+      gid: 1000
+      dry_run: false
+      enforce_modes: false
+    tags: ["generic"]
+
+  - name: backup-homeassistant-daily
+    entrypoint: jobs/prefect/flows/backup_homeassistant.py:backup_homeassistant
+    work_pool:
+      name: homelab
+      work_queue_name: default
+    schedules:
+      - cron: "30 6 * * *"
+        timezone: "Etc/UTC"
+    parameters:
+      ha_config_dir: "/srv/homelab/state/homeassistant/"
+      dest_dir: "/mnt/backups/mediaserve/homeassistant"
+      include_db: true
+      keep_days: 10
+    tags: ["backup"]
+
+  - name: backup-static-server
+    entrypoint: jobs/prefect/flows/backup_generic_dir.py:backup_generic_dir
+    work_pool:
+      name: homelab
+      work_queue_name: default
+    parameters:
+      target_dir: /srv/homelab/state/static_server
+      dest_dir: /mnt/backups/mediaserve/static_server
+      exclude_dirs: ""
+      keep_days: 10
+    schedule:
+      cron: "0 0 * * 0" # daily at 00:00 only on Sunday
+      timezone: "Etc/UTC"
+    tags: ["backup"]
