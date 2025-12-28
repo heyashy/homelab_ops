@@ -46,3 +46,33 @@ deployments:
       cron: "0 0 * * 0" # daily at 00:00 only on Sunday
       timezone: "Etc/UTC"
     tags: ["backup"]
+
+  - name: backup-traefik
+    entrypoint: jobs/prefect/flows/backup_generic_dir.py:backup_generic_dir
+    work_pool:
+      name: homelab
+      work_queue_name: default
+    parameters:
+      target_dir: /srv/homelab/state/traefik/
+      dest_dir: /mnt/backups/mediaserve/traefik/
+      exclude_dirs: "logs"
+      keep_days: 10
+    schedule:
+      cron: "0 0 * * *" # daily at 00:00 only on Sunday
+      timezone: "Etc/UTC"
+    tags: ["backup"]
+
+  - name: backup-jellyfin
+    entrypoint: jobs/prefect/flows/backup_generic_dir.py:backup_generic_dir
+    work_pool:
+      name: homelab
+      work_queue_name: default
+    parameters:
+      target_dir: /srv/homelab/state/jellyfin/
+      dest_dir: /mnt/backups/mediaserve/jellyfin/
+      exclude_dirs: "cache,config/metadata"
+      keep_days: 10
+    schedule:
+      cron: "0 0 * * *" # daily at 00:00 only on Sunday
+      timezone: "Etc/UTC"
+    tags: ["backup"]
