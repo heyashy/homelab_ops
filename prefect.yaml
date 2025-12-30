@@ -14,7 +14,7 @@ deployments:
       uid: 1000
       gid: 1000
       dry_run: false
-      enforce_modes: false
+      include_dirs: true
     tags: ["generic"]
 
   - name: backup-homeassistant-daily
@@ -74,5 +74,20 @@ deployments:
       keep_days: 10
     schedule:
       cron: "0 0 * * *" # daily at 00:00 only on Sunday
+      timezone: "Etc/UTC"
+    tags: ["backup"]
+
+  - name: backup-plex
+    entrypoint: jobs/prefect/flows/backup_generic_dir.py:backup_generic_dir
+    work_pool:
+      name: homelab
+      work_queue_name: default
+    parameters:
+      target_dir: /srv/homelab/state/plex/
+      dest_dir: /mnt/backups/mediaserve/plex/
+      exclude_dirs: "config/Library,config/Metadata,config/Cache,config/Drivers,config/Media,config/Logs,config/Codecs,config/Crash Reports,config/Diagnostics,config/Scanners,config/Updates,config/Plug-ins"
+      keep_days: 10
+    schedule:
+      cron: "0 6 * * *" # daily at 00:00 only on Sunday
       timezone: "Etc/UTC"
     tags: ["backup"]
